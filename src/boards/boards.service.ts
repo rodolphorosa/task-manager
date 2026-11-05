@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { BoardEntity } from './entity/board.entity/board.entity.js';
 import { CreateBoardDto } from './dto/create-board.dto/create-board.dto.js';
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
 
 @Injectable()
 export class BoardsService {
@@ -22,9 +22,17 @@ export class BoardsService {
         return this.boards;
     }
 
+    findById(id: string): BoardEntity {
+        const board = this.boards.find(board => board.id === id);
+        if (!board) {
+            throw new NotFoundException('Board not found');
+        }
+        return board;
+    }
+
     create(createBoardDto: CreateBoardDto): BoardEntity {
         const board = new BoardEntity({
-            id: randomUUID().toString(),
+            id: randomUUID(),
             title: createBoardDto.title,
             description: createBoardDto.description
         });
