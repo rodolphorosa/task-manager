@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { BoardEntity } from './entity/board.entity/board.entity.js';
 import { CreateBoardDto } from './dto/create-board.dto/create-board.dto.js';
 import { randomUUID } from 'node:crypto';
+import { PrismaService } from '../prisma/prisma.service.js';
 
 @Injectable()
 export class BoardsService {
@@ -17,6 +18,8 @@ export class BoardsService {
             description: 'Description 2'
         }),
     ];
+
+    constructor(private readonly prismaService: PrismaService) {}
 
     findAll(): BoardEntity[] {
         return this.boards;
