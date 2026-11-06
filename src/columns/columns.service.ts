@@ -58,6 +58,14 @@ export class ColumnsService {
         return this.columns.filter(column => column.boardId === boardId);
     }
 
+    findById(columnId: string): ColumnEntity {
+        const column = this.columns.find(column => column.id === columnId);
+        if(!column) {
+            throw new NotFoundException('Column not found');
+        }
+        return column;
+    }
+
     create(boardId: string, createColumnDto: CreateColumnDto): ColumnEntity {
         const board = this.boardsService.findById(boardId);
         const column = new ColumnEntity({
