@@ -1,4 +1,5 @@
-import { IsDateString, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { IsDateString, IsEnum, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { TaskStatus } from "../../../generated/prisma/enums.js";
 
 export class CreateTaskDto {
     @IsNotEmpty()
@@ -12,9 +13,9 @@ export class CreateTaskDto {
     @IsNumber()
     position!: number;
 
-    @IsIn(["TODO", "IN_PROGRESS", "DONE"])
+    @IsEnum(TaskStatus)
     @IsString()
-    status!: string;
+    status!: TaskStatus;
 
     @IsOptional()
     @IsDateString()

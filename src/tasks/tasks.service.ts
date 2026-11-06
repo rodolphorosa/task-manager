@@ -1,71 +1,45 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ColumnsService } from '../columns/columns.service.js';
-import { TaskEntity } from './entity/task.entity/task.entity.js';
 import { CreateTaskDto } from './dto/create-task.dto/create-task.dto.js';
-import { randomUUID } from 'node:crypto';
+import { PrismaService } from '../prisma/prisma.service.js';
+import { TaskStatus } from '../generated/prisma/enums.js';
 
 @Injectable()
 export class TasksService {
-    constructor(private readonly columnsService: ColumnsService) {}
+    constructor(
+        private readonly prismaService: PrismaService,
+        private readonly columnsService: ColumnsService
+    ) {}
 
-    private readonly tasks: TaskEntity[] = [
-        new TaskEntity({
-            id: '1',
-            title: 'Task 1',
-            description: 'Description of Task 1',
-            columnId: '1',
-            position: 1,
-            status: 'TODO',
-            dueDate: new Date(),
-        }),
-        new TaskEntity({
-            id: '2',
-            title: 'Task 2',
-            description: 'Description of Task 2',
-            columnId: '2',
-            position: 1,
-            status: 'IN_PROGRESS',
-            dueDate: new Date(),
-        }),
-        new TaskEntity({
-            id: '3',
-            title: 'Task 3',
-            description: 'Description of Task 3',
-            columnId: '3',
-            position: 1,
-            status: 'DONE',
-            dueDate: new Date(),
-        }),
-    ]
-
-    findAll(boardId: string, columnId: string): TaskEntity[] {
-        const column = this.columnsService.findById(columnId);
+    async findAll(boardId: string, columnId: string) {
+        const column = await this.columnsService.findById(columnId);
 
         if(column.boardId !== boardId) {
             throw new NotFoundException("Column not found in this board.")
         }
 
-        return this.tasks.filter(task => task.columnId === columnId);
+        return this.prismaService.task.findMany({
+            where: { columnId },
+            orderBy: { position: 'asc' }
+        })
     }
 
-    create(boardId: string, columnId: string, createTaskDto: CreateTaskDto) {
-        const column = this.columnsService.findById(columnId)
-        
-        if(column.boardId !== boardId) {
-            throw new NotFoundException("Column not found in this board.")
-        }
-        
-        const task = new TaskEntity({
-            id: randomUUID(),
-            title: createTaskDto.title,
-            description: createTaskDto.description,
-            columnId: column.id,
-            position: createTaskDto.position,
-            status: createTaskDto.status,
-            dueDate: createTaskDto.dueDate ? new Date(createTaskDto.dueDate) :  undefined
-        })
+    async create(boardId: string, columnId: string, createTaskDto: CreateTaskDto) {
+        const column = await this.columnsService.findById(columnId);
 
-        this.tasks.push(task);
-        return task;
+        if(column.boardId !== boardId) {
+            throw new NotFoundException('Column not found in this board.');
+        }
+
+        return this.prismaService.task.create({
+            data: {
+                title: createTaskDto.title,
+                description: createTaskDto.description,
+                columnId,
+                position: createTaskDto.position,
+                status: createTaskDto.status as TaskStatus,
+                dueDate: createTaskDto.dueDate ? new Date(createTaskDto.dueDate): undefined
+            }
+        })
     }
 }
