@@ -12,12 +12,19 @@ export class BoardsService {
 
     async findById(id: string) {
         const board = await this.prismaService.board.findUnique({
-            where: { id }
+            where: { id },
+            include: {
+                columns: {
+                    include: {
+                        tasks: true
+                    }
+                }
+            }
         });
         
         if (!board) {
             throw new NotFoundException('Board not found');
-        }
+        };
         
         return board;
     }
