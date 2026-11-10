@@ -7,7 +7,9 @@ export class BoardsService {
     constructor(private readonly prismaService: PrismaService) {}
 
     async findAll() {
-        return this.prismaService.board.findMany();
+        return this.prismaService.board.findMany({
+            orderBy: { updatedAt: 'desc' }
+        });
     }
 
     async findById(id: string) {
@@ -33,7 +35,8 @@ export class BoardsService {
         return this.prismaService.board.create({
             data: {
                 title: createBoardDto.title,
-                description: createBoardDto.description
+                description: createBoardDto.description,
+                color: createBoardDto.color
             }
         });
     }

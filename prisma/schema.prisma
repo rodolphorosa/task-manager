@@ -28,6 +28,8 @@ model Board {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
+  color       String @default("slate")
+
   columns     Column[]
 
   @@map("boards")
